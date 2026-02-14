@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Dashboard - Tour Guide System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav id="navbar">
+        <div class="logo">TourGuide</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container dashboard-container">
+        <div class="dashboard-card">
+            <h2>My Tours</h2>
+            <div id="my-tours-list">Loading...</div>
+
+            <h3 style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;">Create New Tour</h3>
+            <form id="create-tour-form" class="form-container"
+                style="margin:0; width:100%; box-shadow:none; padding:0;">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="location" required>
+                </div>
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="number" id="price" required>
+                </div>
+                <div class="form-group">
+                    <label>Duration (Hours)</label>
+                    <input type="number" id="duration" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="description" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Image</label>
+                    <input type="file" id="image-file" accept="image/*">
+                    <input type="hidden" id="image">
+                    <div id="image-preview"></div>
+                </div>
+                <button type="submit" class="btn">Create Tour</button>
+            </form>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>Manage Bookings</h2>
+            <div id="bookings-list">Loading...</div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMyTours();
+            loadBookings();
+
+            document.getElementById('create-tour-form').addEventListener('submit', createTour);
+            document.getElementById('image-file').addEventListener('change', uploadImage);
+        });
+
+        async function uploadImage() {
+            const fileInput = document.getElementById('image-file');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload.php`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('image').value = data.url;
+                    document.getElementById('image-preview').innerHTML = `<img src="${data.url}" style="max-width:200px; margin-top:10px;">`;
+                } else {
+                    alert('Image upload failed: ' + data.message);
+                    fileInput.value = '';
+                }
+            } catch (error) {
+                console.error('Upload error', error);
+                alert('Upload error');
+            }
+        }
+
+        async function loadMyTours() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/tours.php?guide_id=${user.id}`);
+                const tours = await response.json();
+
+                const container = document.getElementById('my-tours-list');
+                container.innerHTML = '';
+
+                tours.forEach(tour => {
+                    const div = document.createElement('div');
+                    div.className = 'item-card';
+
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h4>${tour.title}</h4>
+                            <span class="status-badge status-${tour.is_approved == 1 ? 'approved' : 'pending'}">
+                                ${tour.is_approved == 1 ? 'Approved' : 'Pending'}
+                            </span>
+                        </div>
+                        <p>${tour.location} - $${tour.price}</p>
+                        <button onclick="deleteTour(${tour.id})" class="btn" style="background:#c0392b; width:auto; padding:5px 10px; font-size:0.8rem; margin-top:5px;">Delete</button>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading tours', error);
+            }
+        }
+
+        async function createTour(e) {
+            e.preventDefault();
+            const data = {
+                title: document.getElementById('title').value,
+                location: document.getElementById('location').value,
+                price: document.getElementById('price').value,
+                duration: document.getElementById('duration').value,
+                description: document.getElementById('description').value,
+                image: document.getElementById('image').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/tours.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('Tour created!');
+                    loadMyTours();
+                    document.getElementById('create-tour-form').reset();
+                    document.getElementById('image-preview').innerHTML = '';
+                } else {
+                    alert('Failed to create tour');
+                }
+            } catch (error) {
+                console.error('Error creating tour', error);
+            }
+        }
+
+        async function deleteTour(id) {
+            if (!confirm('Are you sure?')) return;
+            try {
+                await fetch(`${API_BASE}/tours.php?id=${id}`, { method: 'DELETE' });
+                loadMyTours();
+            } catch (error) { console.error(error); }
+        }
+
+        async function loadBookings() {
+            try {
+                const response = await fetch(`${API_BASE}/bookings.php`);
+                const bookings = await response.json();
+
+                const container = document.getElementById('bookings-list');
+                container.innerHTML = '';
+
+                bookings.forEach(booking => {
+                    const div = document.createElement('div');
+                    div.className = 'item-card';
+
+                    div.innerHTML = `
+                        <h4>${booking.tour_title}</h4>
+                        <div style="display:flex; justify-content:space-between; margin:10px 0;">
+                            <span><strong>Tourist:</strong> ${booking.tourist_name}</span>
+                            <span><strong>Date:</strong> ${booking.booking_date}</span>
+                        </div>
+                        <p><strong>Status:</strong> <span class="status-badge status-${booking.status}">${booking.status}</span></p>
+                        ${booking.status === 'pending' ? `
+                            <div style="margin-top:10px;">
+                                <button onclick="updateBooking(${booking.id}, 'confirmed')" class="btn" style="background:#27ae60; width:auto; padding:5px 10px; margin-right:5px;">Confirm</button>
+                                <button onclick="updateBooking(${booking.id}, 'cancelled')" class="btn" style="background:#c0392b; width:auto; padding:5px 10px;">Decline</button>
+                            </div>
+                        ` : ''}
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading booking', error);
+            }
+        }
+
+        async function updateBooking(id, status) {
+            try {
+                const response = await fetch(`${API_BASE}/bookings.php`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, status })
+                });
+                if (response.ok) loadBookings();
+            } catch (error) { console.error(error); }
+        }
+    </script>
+</body>
+
+</html>

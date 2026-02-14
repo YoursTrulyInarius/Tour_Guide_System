@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Tour Guide System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav id="navbar">
+        <div class="logo">TourGuide Admin</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container dashboard-container">
+        <div class="dashboard-card">
+            <h2>User Management</h2>
+            <div class="table-responsive">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Users loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <h2>Tour Approval</h2>
+            <div id="tours-list">
+                <!-- Tours loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUsers();
+            loadAllTours();
+        });
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/users.php`);
+                const users = await response.json();
+
+                const tbody = document.querySelector('#users-table tbody');
+                tbody.innerHTML = '';
+
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${user.username}</td>
+                        <td>${user.role}</td>
+                        <td><span class="status-badge status-${user.status}">${user.status}</span></td>
+                        <td>
+                            ${user.role !== 'admin' ? `
+                                <button onclick="updateUserStatus(${user.id}, '${user.status === 'banned' ? 'active' : 'banned'}')" 
+                                    class="btn" style="background:${user.status === 'banned' ? '#27ae60' : '#c0392b'}; margin:0; padding:5px 10px; font-size:0.8rem;">
+                                    ${user.status === 'banned' ? 'Unban' : 'Ban'}
+                                </button>
+                            ` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error loading users', error);
+            }
+        }
+
+        async function updateUserStatus(id, status) {
+            try {
+                await fetch(`${API_BASE}/users.php`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, status })
+                });
+                loadUsers();
+            } catch (error) { console.error(error); }
+        }
+
+        async function loadAllTours() {
+            try {
+                // Fetch all tours (admin sees all due to backend logic)
+                const response = await fetch(`${API_BASE}/tours.php`);
+                const tours = await response.json();
+
+                const container = document.getElementById('tours-list');
+                container.innerHTML = '';
+
+                tours.forEach(tour => {
+                    const div = document.createElement('div');
+                    div.className = 'item-card';
+
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h4>${tour.title}</h4>
+                            <span class="status-badge status-${tour.is_approved == 1 ? 'approved' : 'pending'}">
+                                ${tour.is_approved == 1 ? 'Approved' : 'Pending'}
+                            </span>
+                        </div>
+                        <p><strong>Guide:</strong> ${tour.guide_name}</p>
+                        ${tour.is_approved == 0 ? `
+                            <button onclick="approveTour(${tour.id})" class="btn" style="background:#27ae60; width:auto; display:inline-block; margin-top:5px;">Approve</button>
+                        ` : ''}
+                    `;
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading tours', error);
+            }
+        }
+
+        async function approveTour(id) {
+            try {
+                const response = await fetch(`${API_BASE}/tours.php?action=approve`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                loadAllTours();
+            } catch (error) { console.error(error); }
+        }
+    </script>
+</body>
+
+</html>

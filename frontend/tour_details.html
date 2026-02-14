@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Details - Tour Guide System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <nav id="navbar">
+        <div class="logo">TourGuide</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li id="nav-login"><a href="login.html">Login</a></li>
+            <li id="nav-register"><a href="register.html">Register</a></li>
+            <li id="nav-dashboard" style="display: none;"><a href="#" id="dashboard-link">Dashboard</a></li>
+            <li id="nav-logout" style="display: none;"><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container tour-details-container">
+        <div id="tour-content">
+            <!-- Tour details loaded here -->
+            <p>Loading...</p>
+        </div>
+
+        <div class="booking-form-container" id="booking-section" style="display: none;">
+            <h3>Book This Tour</h3>
+            <form id="booking-form">
+                <input type="hidden" id="tour-id">
+                <div class="form-group">
+                    <label for="booking-date">Date</label>
+                    <input type="date" id="booking-date" required>
+                </div>
+                <button type="submit" class="btn">Book Now</button>
+            </form>
+        </div>
+        <div id="login-to-book" style="display: none;">
+            <p><a href="login.html">Login</a> or <a href="register.html">Register</a> to book this tour.</p>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tourId = urlParams.get('id');
+            if (tourId) {
+                loadTourDetails(tourId);
+            }
+        });
+
+        async function loadTourDetails(id) {
+            const user = JSON.parse(localStorage.getItem('user'));
+            try {
+                const response = await fetch(`${API_BASE}/tours.php?id=${id}`);
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    const tour = data[0];
+                    const container = document.getElementById('tour-content');
+                    const img = tour.image ? tour.image : 'https://via.placeholder.com/800x400';
+
+                    container.innerHTML = `
+                        <img src="${img}" alt="${tour.title}" style="width:100%; max-height:400px; object-fit:cover; border-radius:5px;">
+                        <h1>${tour.title}</h1>
+                        <p><strong>Location:</strong> ${tour.location}</p>
+                        <p><strong>Duration:</strong> ${tour.duration} hours</p>
+                        <p><strong>Price:</strong> $${tour.price}</p>
+                        <p><strong>Guide:</strong> ${tour.guide_name}</p>
+                        <div class="description">
+                            <h3>Description</h3>
+                            <p>${tour.description}</p>
+                        </div>
+                    `;
+
+                    document.getElementById('tour-id').value = tour.id;
+
+                    if (user && user.role === 'tourist') {
+                        document.getElementById('booking-section').style.display = 'block';
+                    } else if (!user) {
+                        document.getElementById('login-to-book').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading tour details', error);
+            }
+        }
+
+        document.getElementById('booking-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tourId = document.getElementById('tour-id').value;
+            const date = document.getElementById('booking-date').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/bookings.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tour_id: tourId, booking_date: date })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Booking successful!');
+                    window.location.href = 'dashboard_tourist.html';
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Booking error', error);
+            }
+        });
+    </script>
+</body>
+
+</html>

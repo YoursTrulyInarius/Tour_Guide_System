@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Guide System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="landing-page">
+    <nav id="navbar" class="transparent-nav">
+        <div class="logo">TourGuide System</div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">Home</a></li>
+            <li id="nav-login"><a href="login.html" class="btn-nav">Login</a></li>
+            <li id="nav-register"><a href="register.html" class="btn-nav outline">Register</a></li>
+            <li id="nav-dashboard" style="display: none;"><a href="#" id="dashboard-link">Dashboard</a></li>
+            <li id="nav-logout" style="display: none;"><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+
+    <header class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Discover the Wonders of the Philippines</h1>
+            <p>Explore pristine beaches, historic landmarks, and vibrant culture with local experts.</p>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Where do you want to go in PH?">
+                <button id="search-btn">Find Tours</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="container">
+            <h2>Why Choose Us?</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h3>DOT Accredited Guides</h3>
+                    <p>Connect with locals officially recognized by the Department of Tourism.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Easy Island Hopping</h3>
+                    <p>Book tours across over 7,000 islands with just a few clicks.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Filipino Hospitality</h3>
+                    <p>Experience the warmth and culture of the Philippines firsthand.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main id="tour-list" class="tour-grid container">
+        <!-- Tours will be loaded here -->
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+                nav.classList.remove('transparent-nav');
+            } else {
+                nav.classList.remove('scrolled');
+                nav.classList.add('transparent-nav');
+            }
+        });
+    </script>
+</body>
+
+</html>
