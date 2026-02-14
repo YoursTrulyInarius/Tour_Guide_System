@@ -2,6 +2,7 @@
 
 > **Status:** Under Production / Prototype
 > **Developer:** Sonjeev Cabardo
+> **40%**
 
 A web-based platform connecting tourists with professional local guides in the Philippines. This system allows users to discover, book, and review tours, while guides can manage their tour packages and bookings.
 
