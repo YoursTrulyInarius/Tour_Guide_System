@@ -65,5 +65,3 @@ A web-based platform connecting tourists with professional local guides in the P
 3.  **Create (Guide):** Go to your dashboard to create a new tour package. (Note: New tours require Admin approval unless auto-approved).
 4.  **Admin Access:** Login with an admin account to approve tours and manage users.
 
----
-*This system is currently a prototype and is under active development.*
