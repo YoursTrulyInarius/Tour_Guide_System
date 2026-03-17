@@ -1,65 +1,962 @@
 <!DOCTYPE html>
+<!-- Ver: 1.0.1 - Premium Tourist Dashboard -->
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tourist Dashboard - Tour Guide System</title>
+    <title>Tourist Dashboard - TourGuide PH</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ---- Dashboard Shell ---- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8;
+            color: #1a202c;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---- Top Header ---- */
+        .dash-header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 64px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .dash-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dash-header .brand-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+        }
+
+        .dash-header .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .dash-header .brand-name span {
+            color: #00b4db;
+        }
+
+        .dash-header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .user-avatar {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 80, 80, 0.3);
+            border-color: rgba(255, 80, 80, 0.5);
+            color: #fff;
+        }
+
+        .home-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .home-link:hover {
+            background: rgba(0, 180, 219, 0.15);
+            border-color: rgba(0, 180, 219, 0.4);
+            color: #00b4db;
+        }
+
+        /* ---- Page Layout ---- */
+        .dash-body {
+            margin-top: 64px;
+            display: flex;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* ---- Sidebar ---- */
+        .dash-sidebar {
+            width: 240px;
+            background: #fff;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.05);
+            padding: 24px 0;
+            flex-shrink: 0;
+            position: fixed;
+            top: 64px; left: 0; bottom: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 8px 16px;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #a0aec0;
+            padding: 0 8px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #4a5568;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar-item:hover {
+            background: #f7fafc;
+            color: #0083b0;
+        }
+
+        .sidebar-item.active {
+            background: linear-gradient(135deg, #e0f7fa, #f1f8e9);
+            color: #006064;
+            border-left: 3px solid #00b4db;
+        }
+
+        .sidebar-item .icon {
+            font-size: 1.1rem;
+            width: 22px;
+            text-align: center;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 12px 16px;
+        }
+
+        /* ---- Main Content ---- */
+        .dash-content {
+            margin-left: 240px;
+            flex: 1;
+            padding: 28px;
+        }
+
+        /* ---- Tab Panels ---- */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* ---- Page Title ---- */
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+
+        .page-header p {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        /* ---- Stats Row ---- */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #e0f2f1, #b2dfdb); }
+        .stat-icon.green  { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+        .stat-icon.yellow   { background: linear-gradient(135deg, #fff9c4, #fff59d); }
+
+        .stat-info .value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1a202c;
+            line-height: 1;
+        }
+
+        .stat-info .label {
+            font-size: 0.78rem;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        /* ---- Card ---- */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid #f0f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* ---- Tour Cards (Explore) ---- */
+        .tours-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .tour-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .tour-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .tour-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+
+        .tour-card .tour-body {
+            padding: 14px;
+        }
+
+        .tour-card .tour-body h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #2d3748;
+        }
+
+        .tour-card .meta {
+            font-size: 0.82rem;
+            color: #718096;
+            margin-bottom: 10px;
+        }
+
+        .tour-card .tour-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* ---- Buttons ---- */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 180, 219, 0.35);
+        }
+
+        /* ---- Badges ---- */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-confirmed { background: #c6f6d5; color: #276749; }
+        .badge-pending   { background: #fef3c7; color: #92600a; }
+        .badge-cancelled { background: #fed7d7; color: #9b2c2c; }
+
+        /* ---- Booking Table ---- */
+        .booking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .booking-table th {
+            background: #f7fafc;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .booking-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f0f4f8;
+            font-size: 0.875rem;
+            color: #2d3748;
+        }
+
+        .booking-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .booking-table tr:hover td {
+            background: #f7fafc;
+        }
+
+        /* ---- Empty State ---- */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: #a0aec0;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        /* ---- Toast ---- */
+        .toast {
+            position: fixed;
+            bottom: 24px; right: 24px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #fff;
+            z-index: 9999;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: linear-gradient(135deg, #38a169, #48bb78); }
+        .toast.error   { background: linear-gradient(135deg, #e53e3e, #fc8181); }
+
+        @media (max-width: 768px) {
+            .dash-sidebar { display: none; }
+            .dash-content { margin-left: 0; }
+        }
+    </style>
 </head>
 
-<body>
-    <nav id="navbar">
-        <div class="logo">TourGuide</div>
-        <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li id="nav-logout"><a href="#" id="logout-btn">Logout</a></li>
-        </ul>
-    </nav>
+<body class="premium-dashboard">
 
-    <div class="container dashboard-container">
-        <div class="dashboard-card" style="grid-column: 1 / -1;">
-            <h2>My Bookings</h2>
-            <div id="bookings-list">
-                <!-- Bookings loaded here -->
-            </div>
+    <!-- TOP HEADER -->
+    <header class="dash-header">
+        <div class="brand">
+            <div class="brand-icon">🗺️</div>
+            <div class="brand-name">Tour<span>Guide</span> PH</div>
         </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar" id="user-avatar">?</div>
+                <span id="user-display-name">Tourist</span>
+            </div>
+            <a href="index.html" class="home-link">🏠 Home</a>
+            <a href="#" id="logout-btn" class="btn-logout">⏻ Logout</a>
+        </div>
+    </header>
+
+    <div class="dash-body">
+        <!-- SIDEBAR -->
+        <aside class="dash-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Tourist Panel</div>
+                <button class="sidebar-item active" onclick="showTab('overview', this)">
+                    <span class="icon">📊</span> Overview
+                </button>
+                <button class="sidebar-item" onclick="showTab('plan-trip', this)">
+                    <span class="icon">🧭</span> Plan My Trip
+                </button>
+                <button class="sidebar-item" onclick="showTab('explore', this)">
+                    <span class="icon">🌍</span> Explore Tours
+                </button>
+                <button class="sidebar-item" onclick="showTab('my-bookings', this)">
+                    <span class="icon">📅</span> My Bookings
+                </button>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-label">Settings</div>
+                <button class="sidebar-item" onclick="showTab('profile', this)">
+                    <span class="icon">👤</span> Profile
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="dash-content">
+
+            <!-- OVERVIEW TAB -->
+            <div class="tab-panel active" id="tab-overview">
+                <div class="page-header">
+                    <h1>Welcome back, <span id="welcome-name">Explorer</span>! 👋</h1>
+                    <p>Ready for your next adventure?</p>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">📅</div>
+                        <div class="stat-info">
+                            <div class="value" id="stat-total-bookings">0</div>
+                            <div class="label">Total Bookings</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">✅</div>
+                        <div class="stat-info">
+                            <div class="value" id="stat-confirmed">0</div>
+                            <div class="label">Confirmed</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">⏳</div>
+                        <div class="stat-info">
+                            <div class="value" id="stat-pending">0</div>
+                            <div class="label">Pending</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Recent Bookings</h2>
+                        <button class="btn-primary" onclick="showTab('explore')">Explore More</button>
+                    </div>
+                    <div class="card-body" id="overview-bookings">
+                        <div class="empty-state">
+                            <div class="empty-icon">🎒</div>
+                            <p>No bookings yet. Start exploring!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLAN MY TRIP TAB -->
+            <div class="tab-panel" id="tab-plan-trip">
+                <div class="page-header">
+                    <h1>Plan Your PH Adventure 🧭</h1>
+                    <p>Select your destination, find a guide, and get ready to explore.</p>
+                </div>
+
+                <div id="plan-flow-container">
+                    <!-- Step 1: Select Place -->
+                    <div id="plan-step-1" class="plan-step">
+                        <div class="card">
+                            <div class="card-header"><h2>Step 1: Choose Your Destination</h2></div>
+                            <div class="card-body">
+                                <div id="location-chips" style="display:flex; flex-wrap:wrap; gap:12px;">
+                                    <p>Loading destinations...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Select Guide -->
+                    <div id="plan-step-2" class="plan-step" style="display:none;">
+                        <button class="btn-primary" style="margin-bottom:20px; background:#f1f5f9; color:#4a5568;" onclick="resetPlan()">← Back to Destinations</button>
+                        <div class="page-header">
+                            <h2>Guides available in <span id="selected-location-name" style="color:#00b4db;">...</span></h2>
+                        </div>
+                        <div class="tours-grid" id="available-guides-list">
+                            <!-- Guides loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Notify & Book -->
+                    <div id="plan-step-3" class="plan-step" style="display:none;">
+                        <button class="btn-primary" style="margin-bottom:20px; background:#f1f5f9; color:#4a5568;" onclick="backToGuides()">← Back to Guides</button>
+                        <div class="card" style="max-width: 600px; margin: 0 auto;">
+                            <div class="card-header"><h2>Final Step: Request Booking</h2></div>
+                            <div class="card-body">
+                                <div id="plan-confirmation-details" style="margin-bottom:24px;">
+                                    <!-- Selection summary -->
+                                </div>
+                                <div class="form-group">
+                                    <label>When do you want to start?</label>
+                                    <input type="date" id="plan-booking-date" required>
+                                </div>
+                                <button class="btn-primary" style="width:100%; margin-top:20px;" onclick="confirmPlanBooking()">🚀 Notify Guide & Book Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPLORE TAB -->
+            <div class="tab-panel" id="tab-explore">
+                <div class="page-header">
+                    <h1>Explore Tours & Spots</h1>
+                    <p>Find the best destinations for your next trip.</p>
+                </div>
+                <div class="tours-grid" id="explore-tours-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">🌴</div>
+                        <p>Loading amazing tours...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MY BOOKINGS TAB -->
+            <div class="tab-panel" id="tab-my-bookings">
+                <div class="page-header">
+                    <h1>My Bookings</h1>
+                    <p>Manage and track all your tour reservations.</p>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2>All My Bookings</h2></div>
+                    <div class="card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="booking-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tour</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Created At</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="my-bookings-list">
+                                    <tr><td colspan="4" style="text-align:center; color:#a0aec0; padding:32px;">Loading bookings...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE TAB -->
+            <div class="tab-panel" id="tab-profile">
+                <div class="page-header">
+                    <h1>My Profile</h1>
+                    <p>View your account information.</p>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h2>Account Details</h2></div>
+                    <div class="card-body" id="profile-info">
+                        <p>Loading profile details...</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
 
     <script src="js/app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            loadBookings();
+        // ---- Tab Navigation ----
+        function showTab(name, btn) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            
+            // If btn not provided, find it in sidebar
+            if (!btn) {
+                document.querySelectorAll('.sidebar-item').forEach(b => {
+                    if (b.innerText.toLowerCase().includes(name.replace('-', ' '))) b.classList.add('active');
+                });
+            } else {
+                btn.classList.add('active');
+            }
+        }
+
+        // ---- Toast ----
+        function showToast(message, type = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = message;
+            t.className = `toast ${type} show`;
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        // ---- Load Tourist Data ----
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                window.location.href = 'login.html';
+                return;
+            }
+            const user = JSON.parse(userStr);
+
+            // Set UI details
+            document.getElementById('user-display-name').textContent = user.username;
+            document.getElementById('welcome-name').textContent = user.username;
+            document.getElementById('user-avatar').textContent = user.username.charAt(0).toUpperCase();
+
+            // Load data
+            loadDashboardData();
+            loadExploreTours();
+            loadLocations(); // New flow
         });
 
-        async function loadBookings() {
+        // ---- Plan My Trip Logic ----
+        let selectedPlanTour = null;
+
+        async function loadLocations() {
             try {
-                const response = await fetch(`${API_BASE}/bookings.php`);
-                const bookings = await response.json();
-
-                const container = document.getElementById('bookings-list');
-                container.innerHTML = '';
-
-                if (bookings.error || bookings.length === 0) {
-                    container.innerHTML = '<p>No bookings found.</p>';
+                const response = await apiFetch(`${API_BASE}/tours.php?action=get_locations`);
+                const locations = await response.json();
+                const container = document.getElementById('location-chips');
+                
+                if (!Array.isArray(locations) || locations.length === 0) {
+                    container.innerHTML = '<p>No destinations available yet.</p>';
                     return;
                 }
 
-                bookings.forEach(booking => {
-                    const div = document.createElement('div');
-                    div.className = 'item-card';
+                container.innerHTML = locations.map(loc => `
+                    <button class="btn-primary" style="background:#fff; color:#1a202c; border:1px solid #e2e8f0; padding:12px 20px;" onclick="selectLocation('${loc}')">
+                        📍 ${loc}
+                    </button>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading locations:', err);
+            }
+        }
 
-                    div.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>${booking.tour_title}</h3>
-                            <span class="status-badge status-${booking.status}">${booking.status}</span>
+        async function selectLocation(loc) {
+            document.getElementById('plan-step-1').style.display = 'none';
+            document.getElementById('plan-step-2').style.display = 'block';
+            document.getElementById('selected-location-name').textContent = loc;
+            
+            const container = document.getElementById('available-guides-list');
+            container.innerHTML = '<p>Searching for guides in ' + loc + '...</p>';
+
+            try {
+                const response = await apiFetch(`${API_BASE}/tours.php?search=${loc}`);
+                const tours = await response.json();
+                
+                if (!Array.isArray(tours) || tours.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><p>No guides available in this location right now.</p></div>';
+                    return;
+                }
+
+                container.innerHTML = tours.map(tour => `
+                    <div class="tour-card">
+                        <img src="${tour.image || 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=400&q=60'}" onerror="this.src='https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=400&q=60'">
+                        <div class="tour-body">
+                            <h4>${tour.guide_name}</h4>
+                            <p style="font-size:0.8rem; color:#718096; margin-bottom:10px;">${tour.title}</p>
+                            <div class="tour-footer">
+                                <span style="font-weight:700;">₱${parseFloat(tour.price).toLocaleString()}</span>
+                                <button class="btn-primary" style="padding:6px 14px; font-size:0.8rem;" onclick="selectGuideForPlan(${JSON.stringify(tour).replace(/"/g, '&quot;')})">Select Guide</button>
+                            </div>
                         </div>
-                        <p><strong>Date:</strong> ${booking.booking_date}</p>
-                    `;
-                    container.appendChild(div);
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading guides:', err);
+            }
+        }
+
+        function selectGuideForPlan(tour) {
+            selectedPlanTour = tour;
+            document.getElementById('plan-step-2').style.display = 'none';
+            document.getElementById('plan-step-3').style.display = 'block';
+            
+            document.getElementById('plan-confirmation-details').innerHTML = `
+                <div style="background:#f8fafc; padding:20px; border-radius:12px; border-left:4px solid #00b4db;">
+                    <h3 style="margin-bottom:8px;">${tour.guide_name}</h3>
+                    <p><strong>Destination:</strong> ${tour.location}</p>
+                    <p><strong>Tour:</strong> ${tour.title}</p>
+                    <p><strong>Rate:</strong> ₱${parseFloat(tour.price).toLocaleString()}</p>
+                </div>
+            `;
+            
+            // Set default date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('plan-booking-date').value = tomorrow.toISOString().split('T')[0];
+            document.getElementById('plan-booking-date').min = new Date().toISOString().split('T')[0];
+        }
+
+        function resetPlan() {
+            document.getElementById('plan-step-2').style.display = 'none';
+            document.getElementById('plan-step-1').style.display = 'block';
+        }
+
+        function backToGuides() {
+            document.getElementById('plan-step-3').style.display = 'none';
+            document.getElementById('plan-step-2').style.display = 'block';
+        }
+
+        async function confirmPlanBooking() {
+            const date = document.getElementById('plan-booking-date').value;
+            if (!date) {
+                showToast('Please select a date.', 'error');
+                return;
+            }
+
+            try {
+                const response = await apiFetch(`${API_BASE}/bookings.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tour_id: selectedPlanTour.id,
+                        booking_date: date
+                    })
                 });
-            } catch (error) {
-                console.error('Error loading bookings', error);
+                
+                if (response.ok) {
+                    showToast('Guide notified! Your trip is planned. 🚀');
+                    setTimeout(() => {
+                        showTab('my-bookings');
+                        loadDashboardData();
+                        // Reset plan flow
+                        document.getElementById('plan-step-3').style.display = 'none';
+                        document.getElementById('plan-step-1').style.display = 'block';
+                    }, 2000);
+                } else {
+                    const data = await response.json();
+                    showToast(data.message || 'Failed to book.', 'error');
+                }
+            } catch (err) {
+                console.error('Booking error:', err);
+                showToast('An error occurred.', 'error');
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                const response = await apiFetch(`${API_BASE}/bookings.php`);
+                const bookings = await response.json();
+
+                if (bookings.error) {
+                    console.error(bookings.error);
+                    return;
+                }
+
+                // Update Stats
+                const total = bookings.length;
+                const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+                const pending = bookings.filter(b => b.status === 'pending').length;
+
+                document.getElementById('stat-total-bookings').textContent = total;
+                document.getElementById('stat-confirmed').textContent = confirmed;
+                document.getElementById('stat-pending').textContent = pending;
+
+                // Update Overview Bookings (Recent 3)
+                const overviewList = document.getElementById('overview-bookings');
+                if (bookings.length === 0) {
+                    overviewList.innerHTML = '<div class="empty-state"><div class="empty-icon">🎒</div><p>No bookings yet. Start exploring!</p></div>';
+                } else {
+                    const recent = bookings.slice(0, 3);
+                    overviewList.innerHTML = recent.map(b => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f4f8;">
+                            <div>
+                                <h4 style="font-size:0.9rem; color:#2d3748;">${b.tour_title}</h4>
+                                <p style="font-size:0.8rem; color:#718096;">Date: ${b.booking_date}</p>
+                            </div>
+                            <span class="badge badge-${b.status}">${b.status}</span>
+                        </div>
+                    `).join('') + (bookings.length > 3 ? `<button class="sidebar-item" style="text-align:center; color:#0083b0; margin-top:10px;" onclick="showTab('my-bookings')">View all bookings</button>` : '');
+                }
+
+                // Update My Bookings Table
+                const bookingTable = document.getElementById('my-bookings-list');
+                if (bookings.length === 0) {
+                    bookingTable.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#a0aec0; padding:32px;">No bookings found.</td></tr>';
+                } else {
+                    bookingTable.innerHTML = bookings.map(b => `
+                        <tr>
+                            <td style="font-weight:600;">${b.tour_title}</td>
+                            <td>${b.booking_date}</td>
+                            <td><span class="badge badge-${b.status}">${b.status}</span></td>
+                            <td style="color:#a0aec0; font-size:0.8rem;">${new Date(b.created_at).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Update Profile Info
+                const user = JSON.parse(localStorage.getItem('user'));
+                document.getElementById('profile-info').innerHTML = `
+                    <div style="display:grid; gap:16px;">
+                        <div>
+                            <label style="font-size:0.8rem; color:#718096; display:block;">Username</label>
+                            <span style="font-weight:600;">${user.username}</span>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; color:#718096; display:block;">Email Address</label>
+                            <span style="font-weight:600;">${user.email}</span>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; color:#718096; display:block;">Account Type</label>
+                            <span class="badge badge-confirmed" style="background:#e0f7fa; color:#006064;">Tourist</span>
+                        </div>
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error('Error fetching bookings:', err);
+            }
+        }
+
+        async function loadExploreTours() {
+            try {
+                const response = await apiFetch(`${API_BASE}/tours.php`);
+                const tours = await response.json();
+                
+                const container = document.getElementById('explore-tours-list');
+                if (!Array.isArray(tours) || tours.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🗺️</div><p>No tours available yet. Check back soon!</p></div>';
+                    return;
+                }
+
+                container.innerHTML = tours.map(tour => {
+                    const img = tour.image ? tour.image : 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=400&q=60';
+                    return `
+                        <div class="tour-card">
+                            <img src="${img}" alt="${tour.title}" onerror="this.src='https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=400&q=60'">
+                            <div class="tour-body">
+                                <h4>${tour.title}</h4>
+                                <div class="meta">📍 ${tour.location} &nbsp;|&nbsp; ⏱ ${tour.duration} hrs</div>
+                                <div class="tour-footer">
+                                    <span style="font-weight:700; color:#2d3748; font-size:1.1rem;">₱${parseFloat(tour.price).toLocaleString()}</span>
+                                    <a href="tour_details.html?id=${tour.id}" class="btn-primary" style="padding:6px 14px; font-size:0.8rem;">Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error('Error loading tours:', err);
+                document.getElementById('explore-tours-list').innerHTML = '<p style="text-align:center; padding:20px; color:red;">Failed to load tours.</p>';
             }
         }
     </script>

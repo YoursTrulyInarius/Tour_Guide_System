@@ -19,19 +19,16 @@ if ($method === 'POST') {
     check_session();
 }
 
-function register($pdo, $input)
-{
+function register($pdo, $input) {
     if (!isset($input['username'], $input['email'], $input['password'])) {
         http_response_code(400);
         echo json_encode(['message' => 'Missing required fields']);
         return;
     }
-
     $username = $input['username'];
     $email = $input['email'];
     $password = password_hash($input['password'], PASSWORD_DEFAULT);
-    $role = isset($input['role']) ? $input['role'] : 'tourist'; // Default to tourist
-
+    $role = isset($input['role']) ? $input['role'] : 'tourist';
     try {
         $stmt = $pdo->prepare("INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)");
         $stmt->execute([$username, $email, $password, $role]);
@@ -42,23 +39,17 @@ function register($pdo, $input)
     }
 }
 
-function login($pdo, $input)
-{
+function login($pdo, $input) {
     if (!isset($input['email'], $input['password'])) {
         http_response_code(400);
         echo json_encode(['message' => 'Missing email or password']);
         return;
     }
-
-    $email = $input['email'];
-    $password = $input['password'];
-
     try {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
+        $stmt->execute([$input['email']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($user && password_verify($password, $user['password_hash'])) {
+        if ($user && password_verify($input['password'], $user['password_hash'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['username'] = $user['username'];
@@ -80,14 +71,12 @@ function login($pdo, $input)
     }
 }
 
-function logout()
-{
+function logout() {
     session_destroy();
     echo json_encode(['message' => 'Logged out successfully']);
 }
 
-function check_session()
-{
+function check_session() {
     if (isset($_SESSION['user_id'])) {
         echo json_encode([
             'loggedIn' => true,
@@ -101,4 +90,3 @@ function check_session()
         echo json_encode(['loggedIn' => false]);
     }
 }
-?>

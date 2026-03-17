@@ -2,57 +2,32 @@
 require 'config.php';
 session_start();
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'guide') {
-    http_response_code(403);
-    echo json_encode(['message' => 'Unauthorized']);
-    exit;
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
-    $target_dir = "../uploads/";
-    $file_name = basename($_FILES["file"]["name"]);
-    // Sanitize filename
-    $file_name = preg_replace("/[^a-zA-Z0-9.]/", "_", $file_name);
-    // Add unique prefix
-    $target_file = $target_dir . uniqid() . '_' . $file_name;
-    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-    $check = getimagesize($_FILES["file"]["tmp_name"]);
+    $upload_dir = __DIR__ . "/../uploads/";
+    if (!is_dir($upload_dir)) { mkdir($upload_dir, 0755, true); }
+    $file = $_FILES['file'];
+    $check = getimagesize($file['tmp_name']);
     if ($check === false) {
-        http_response_code(400);
-        echo json_encode(['message' => 'File is not an image.']);
-        exit;
+        http_response_code(400); echo json_encode(['message' => 'File is not a valid image.']); exit;
     }
-
-    if ($_FILES["file"]["size"] > 5000000) { // 5MB
-        http_response_code(400);
-        echo json_encode(['message' => 'Sorry, your file is too large.']);
-        exit;
+    if ($file['size'] > 5000000) {
+        http_response_code(400); echo json_encode(['message' => 'File is too large. Max 5MB.']); exit;
     }
-
-    if (
-        $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-        && $imageFileType != "gif"
-    ) {
-        http_response_code(400);
-        echo json_encode(['message' => 'Sorry, only JPG, JPEG, PNG & GIF files are allowed.']);
-        exit;
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (!in_array($ext, $allowed)) {
+        http_response_code(400); echo json_encode(['message' => 'Only JPG, PNG, GIF, WEBP files are allowed.']); exit;
     }
-
-    if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)) {
-        // Return the path relative to the web root
-        // Assuming backend is at /backend/, uploads at /uploads/
-        // We need the URL relative to the domain or absolute URL
-        // Simple relative path from index.html (which is in /frontend/) to /uploads/
-        // ../uploads/filename
-        $url = "../uploads/" . basename($target_file);
+    $new_name = uniqid('tour_', true) . '.' . $ext;
+    $target = $upload_dir . $new_name;
+    if (move_uploaded_file($file['tmp_name'], $target)) {
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'];
+        $url = $protocol . '://' . $host . '/Tour_Guide_System/uploads/' . $new_name;
         echo json_encode(['url' => $url]);
     } else {
-        http_response_code(500);
-        echo json_encode(['message' => 'Sorry, there was an error uploading your file.']);
+        http_response_code(500); echo json_encode(['message' => 'Error saving file. Check uploads folder permissions.']);
     }
 } else {
-    http_response_code(400);
-    echo json_encode(['message' => 'No file uploaded']);
+    http_response_code(400); echo json_encode(['message' => 'No file uploaded.']);
 }
-?>
