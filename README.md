@@ -77,4 +77,4 @@ npm run dev   # Starts the Vite development server
 ## 🚧 Current Development Focus
 
 We are currently refining the **Landing Page** to serve as the gateway for the discovery experience. Stay tuned!
-
+need to update the "upload photo". instead of choosing one at a time. we'll add multiple select
