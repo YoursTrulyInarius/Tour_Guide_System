@@ -1,109 +1,80 @@
-# Tour Guide System (Prototype)
+# 🗺️ Tour Guide System (Prototype)
 
-> **Status:** Under Production / Prototype
-> **Developer:** Sonjeev Cabardo
-> **Phase:** Advanced UI Revamp & Location Discovery Flow 🚀
+> **🚀 Status:** **STILL WORKING ON IT** (Active Production)
+>
+> **🎯 Next Major Step:** **🎨 Working on the Landing Page**
+>
+> **Developer:** YoursTrulyInarius
 
-A premium web-based platform connecting tourists with professional local guides in the Philippines. The system features a unique, high-end dashboard experience for both users and a logical location-first discovery flow.
+A premium, modern web platform connecting tourists with expert local guides in the Philippines. The system is transitioning from a traditional PHP-based architecture to a high-performance **React + Vite** frontend.
 
-## ✨ Recent Revamp Highlights
+---
 
-### 🎨 Premium Dashboard Experience
-- **Unique Branding:** Distinct visual themes for Tourists (Teal/Cyan) and Guides (Orange/Gold), ensuring a premium feel for both roles.
-- **Glassmorphism UI:** Modern, translucent elements with sleek shadows and Inter typography.
-- **Real-time Statistics:** Instant overview of bookings (Pending, Confirmed, Total) directly on the dashboard.
+## 🏗️ Technology Stack
 
-### 🧭 Location-First Discovery ("Plan My Trip")
-We've introduced a logical 3-step planning flow for tourists:
-1. **Choose Destination:** Select from unique, approved locations across the PH.
-2. **Find Local Guide:** Discover guides and tours specifically active in that area.
-3. **Notify & Book:** Instantly notify the guide and create a booking request.
+Our system leverages a robust, modern stack to ensure performance and scalability:
 
-### 🖼️ Immersive Tour Details
-- Full-width hero sections with gradient overlays.
-- Sticky booking widgets for an intuitive reservation process.
-- Responsive design for seamless browsing on mobile and desktop.
+*   **Frontend Core:** ReactJS (v18+) with Vite for ultra-fast development.
+*   **Styling & Design:** Vanilla CSS with HSL-based modern color tokens and **Glassmorphism** effects.
+*   **Backend & Logic:** PHP (Vanilla) for heavy-lifting API endpoints and legacy logic.
+*   **Database:** MySQL (Relational storage for users, tours, and bookings).
+*   **Integrations:** 
+    *   **PayPal API:** For secure, global payment processing.
+    *   **PHPMailer:** For automated email notifications and booking receipts.
 
-## 📊 System Flow Diagram
+---
 
-```mermaid
-graph TD
-    %% Use styles for clarity
-    classDef user fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef process fill:#fff3e0,stroke:#e65100,stroke-width:2px;
-    classDef db fill:#f1f8e9,stroke:#33691e,stroke-width:2px;
+## ✨ What We've Changed (Recent Updates)
 
-    Tourist[Tourist]:::user
-    Guide[Local Guide]:::user
-    
-    subgraph Frontend [Immersive Frontend]
-        T_Dash[Tourist Dashboard]:::process
-        Plan[Plan My Trip Wizard]:::process
-        Details[Tour Details Page]:::process
-        G_Dash[Guide Dashboard]:::process
-    end
+*   **React Migration:** Transitioned the main user dashboard and booking flows to React for a smoother, single-page experience.
+*   **Premium Visuals:** Implemented sophisticated glassmorphism UI/UX across all components.
+*   **Secure Checkout:** Fully integrated the **PayPal Checkout Button** for real-time transactions.
+*   **Support & Interaction:** Added a persistent **Support Chat** to help tourists in real-time.
+*   **Simplified Navigation:** Restructured the app into specialized components (CheckoutForm, SuccessView, LandingPage).
 
-    subgraph API [Backend API - PHP]
-        T_API[tours.php]:::process
-        B_API[bookings.php]:::process
-        L_API[tours.php?action=get_locations]:::process
-    end
+---
 
-    subgraph Database [MySQL Storage]
-        DB_Users[(Users Table)]:::db
-        DB_Tours[(Tours Table)]:::db
-        DB_Bookings[(Bookings Table)]:::db
-    end
+## 🔄 System Process Flow
 
-    %% Flow logic
-    Tourist -->|Selects Place| Plan
-    Plan -->|Calls| L_API
-    L_API -->|SELECT DISTINCT| DB_Tours
-    
-    Plan -->|Filters Guides| T_API
-    T_API -->|SELECT| DB_Tours
-    
-    Plan -->|Notify/Book| B_API
-    B_API -->|INSERT INTO| DB_Bookings
-    
-    DB_Bookings -->|Triggers Notification| G_Dash
-    Guide -->|Views Request| G_Dash
-    G_Dash -->|Update Status| B_API
-    B_API -->|UPDATE| DB_Bookings
-    
-    DB_Bookings -->|Refined Status| T_Dash
+How the system works for a seamless tourist experience:
+
+1.  **Landing Page Discovery:** Tourists arrive at a high-end landing page to search for destinations.
+2.  **Attraction/Guide Selection:** Browse curated tour packages and localized guide profiles.
+3.  **Booking Configuration:** Fill out the `CheckoutForm` with tour dates and visitor details.
+4.  **Secure Payment:** Trigger the `PayPalButton` to handle payments securely via the PayPal Sandbox/Live API.
+5.  **Success & Confirmation:** Automatic redirection to the `SuccessView` and triggered notification to the local guide via backend.
+6.  **Support Access:** Ongoing support via the integrated **Support Chat** widget.
+
+---
+
+## 🛠️ Installation & Local Setup
+
+### 1️⃣ XAMPP (Backend & MySQL)
+Required to run the PHP backend and database.
+*   Download and install [XAMPP](https://www.apachefriends.org/).
+*   Start **Apache** and **MySQL**.
+*   Import the database from `backend/database_schema.sql` (if available).
+
+### 2️⃣ Node.js (Frontend Development)
+Essential for the React environment.
+*   **Download:** [Download Node.js](https://nodejs.org/) (Recommended: LTS Version).
+*   **Install:** Follow the installer prompts and ensure "Add to PATH" is checked.
+
+### 3️⃣ Running the Project
+```bash
+# Clone the repository into your xampp/htdocs folder
+cd c:/xampp/htdocs
+git clone <repository_url> Tour_Guide_System
+
+# Setup Frontend
+cd Tour_Guide_System/frontend-react
+npm install   # Installs all necessary React dependencies
+npm run dev   # Starts the Vite development server
 ```
 
-## 🛠️ Technology Stack
+---
 
-- **Frontend:** HTML5, CSS3 (Vanilla + Modern Tokens), JavaScript (ES6+), AJAX
-- **Backend:** PHP (Vanilla)
-- **Database:** MySQL
-- **Design:** Inter Fonts, HSL-based Palettes, Glassmorphism CSS
+## 🚧 Current Development Focus
 
-## 📥 How to Clone & Run
+We are currently refining the **Landing Page** to serve as the gateway for the discovery experience. Stay tuned!
 
-1.  **Install XAMPP:**
-    - Download and install [XAMPP](https://www.apachefriends.org/index.html).
-    - Start Apache and MySQL.
-
-2.  **Clone the Repository:**
-    ```bash
-    cd c:/xampp/htdocs
-    git clone <repository_url> Tour_Guide_System
-    ```
-
-3.  **Setup the Database:**
-    - Go to `http://localhost/phpmyadmin`.
-    - Create `tour_guide_db`.
-    - Import `backend/database.sql`.
-
-4.  **Run:**
-    - Navigate to `http://localhost/Tour_Guide_System`.
-
-## 📝 Usage
-
-1.  **Register/Login:** Choose "Tourist" or "Guide".
-2.  **Plan Trip (Tourist):** Use the 🧭 sidebar to find guides by destination.
-3.  **Manage (Guide):** Track notifications and booking requests in your dedicated dashboard.
-4.  **Explore:** Browse all tours via the 🌍 "Explore" tab.
