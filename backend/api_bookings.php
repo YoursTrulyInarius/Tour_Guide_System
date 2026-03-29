@@ -1,13 +1,20 @@
 <?php
+header('Content-Type: application/json');
 require_once 'config.php';
-require_once 'mailer_helper.php';
+// Only load mailer if PHPMailer is installed via Composer
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once 'mailer_helper.php';
+}
+require_once 'holidays.php';
 
 // Helper to generate a unique QR code hash
 function generateQRCode($booking_id) {
-    return hash('sha256', $booking_id . time() . 'tour_guide_salt');
+    return hash('sha256', $booking_id . uniqid(bin2hex(random_bytes(8)), true) . 'tour_guide_salt');
 }
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Simple Rate Limiter (Throttle: 10 requests per minute)
 if (!isset($_SESSION['request_count'])) {
@@ -20,7 +27,7 @@ if (time() - $_SESSION['first_request_time'] > 60) {
 } else {
     $_SESSION['request_count']++;
 }
-if ($_SESSION['request_count'] > 10) {
+if ($_SESSION['request_count'] > 60) {
     http_response_code(429);
     echo json_encode(['success' => false, 'message' => 'Too many requests. Please slow down.']);
     exit;
@@ -41,6 +48,12 @@ switch ($action) {
 
             if ($blackout) {
                 echo json_encode(['success' => false, 'message' => 'This date is currently closed: ' . $blackout['reason']]);
+                break;
+            }
+
+            // 1b. Check for Philippine Holidays
+            if ($holiday_name = isPhilippineHoliday($date)) {
+                echo json_encode(['success' => false, 'message' => 'This date is currently closed: ' . $holiday_name]);
                 break;
             }
 
@@ -90,8 +103,6 @@ switch ($action) {
         }
         break;
 
-        break;
-
     case 'get_addons':
         $attraction_id = isset($_GET['attraction_id']) ? intval($_GET['attraction_id']) : 1;
         try {
@@ -131,7 +142,13 @@ switch ($action) {
         }
 
         $booking_id = bin2hex(random_bytes(16)); // Simple UUID placeholder
-        $expires_at = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+        
+        $payment_method = isset($data['payment_method']) ? $data['payment_method'] : 'paypal';
+        if ($payment_method === 'paylater') {
+            $expires_at = null; // No auto-expiration for pay later
+        } else {
+            $expires_at = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+        }
 
         try {
             $pdo->beginTransaction();
@@ -141,6 +158,11 @@ switch ($action) {
             $blackout_stmt->execute([$data['attraction_id'], $data['date']]);
             if ($blackout_stmt->fetch()) {
                 throw new Exception("Selected date is a blackout date.");
+            }
+
+            // 1b. Double check Philippine Holidays
+            if ($holiday_name = isPhilippineHoliday($data['date'])) {
+                throw new Exception("Selected date is closed: " . $holiday_name);
             }
 
             // 2. Double check Capacity
@@ -204,7 +226,7 @@ switch ($action) {
             }
 
             // Insert Booking
-            $stmt = $pdo->prepare("INSERT INTO bookings (id, visitor_email, visitor_name, visitor_phone, visit_date, time_slot_id, total_amount, status, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)");
+            $stmt = $pdo->prepare("INSERT INTO bookings (id, visitor_email, visitor_name, visitor_phone, visit_date, time_slot_id, total_amount, status, expires_at, payment_method) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)");
             $stmt->execute([
                 $booking_id,
                 $data['visitor_email'],
@@ -213,7 +235,8 @@ switch ($action) {
                 $data['date'],
                 $data['time_slot_id'],
                 $total_amount,
-                $expires_at
+                $expires_at,
+                $payment_method
             ]);
 
             // Insert placeholder tickets
@@ -238,14 +261,20 @@ switch ($action) {
         break;
 
     case 'confirm':
-        // Expecting JSON: { booking_id, paypal_order_id }
+        // Expecting JSON: { booking_id, paypal_order_id, gcash_reference }
         $data = json_decode(file_get_contents('php://input'), true);
         $booking_id = $data['booking_id'];
         $paypal_order_id = isset($data['paypal_order_id']) ? $data['paypal_order_id'] : null;
+        $gcash_reference = isset($data['gcash_reference']) ? $data['gcash_reference'] : null;
 
         try {
-            $stmt = $pdo->prepare("UPDATE bookings SET status = 'paid', paypal_order_id = ? WHERE id = ? AND status = 'pending'");
-            $stmt->execute([$paypal_order_id, $booking_id]);
+            if ($gcash_reference) {
+                $stmt = $pdo->prepare("UPDATE bookings SET status = 'paid', gcash_reference = ? WHERE id = ? AND status = 'pending'");
+                $stmt->execute([$gcash_reference, $booking_id]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE bookings SET status = 'paid', paypal_order_id = ? WHERE id = ? AND status = 'pending'");
+                $stmt->execute([$paypal_order_id, $booking_id]);
+            }
 
             if ($stmt->rowCount() > 0) {
                 // Send Ticket Email
@@ -341,6 +370,16 @@ switch ($action) {
             $stmt->execute();
             $attractions = $stmt->fetchAll(PDO::FETCH_ASSOC);
             echo json_encode(['success' => true, 'attractions' => $attractions]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'get_holidays':
+        $year = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
+        try {
+            $holidays = getPhilippineHolidays($year);
+            echo json_encode(['success' => true, 'holidays' => $holidays]);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }

@@ -1,80 +1,120 @@
-# 🗺️ Tour Guide System (Prototype)
+# 🗺️ Tour Guide System (Under Production)
 
-> **🚀 Status:** **STILL WORKING ON IT** (Active Production)
->
-> **🎯 Next Major Step:** **🎞️ Multi-Photo Carousel (Public Booking Page)**
->
-> **Developer:** YoursTrulyInarius
+> [!IMPORTANT]
+> **🚀 PROJECT STATUS:** ACTIVE PRODUCTION / UNDER DEVELOPMENT
+> This system is currently being refined. Key features like the mobile-responsive QR Scanner and Automated Email Reminders are in the implementation phase.
 
-A premium, modern web platform connecting tourists with expert local guides in the Philippines. This system features a robust **PHP/MySQL** backend with a high-performance, modern CSS/JS frontend.
-
----
-
-## 🏗️ Technology Stack
-
-Our system leverages a robust, modern stack to ensure performance and scalability:
-
-*   **⚡ Core Logic:** Native PHP (PHP 7.4/8.0+) with PDO for secure database interactions.
-*   **🎨 Design System:** Modern Vanilla CSS with HSL color tokens, Glassmorphism, and responsive Grid/Flex layouts.
-*   **🏛️ Database:** MySQL (Stored procedures/relational schema for attractions, tickets, and bookings).
-*   **💳 Integrations:** 
-    *   **PayPal SDK:** Fully localized for Philippine Peso (PHP) transactions.
-    *   **PHPMailer:** Automated HTML email notifications for confirmations and e-receipts.
+## 🌟 Overview
+The **Tour Guide System** is a premium, end-to-end digital solution designed to streamline the tourist experience in the Philippines. It bridges the gap between local attractions and visitors through a seamless booking engine, secure payment integrations, and a robust administrative backend for site managers.
 
 ---
 
-## ✨ What We've Changed (Recent Updates)
+## 🏗️ System Architecture
 
-*   **🇵🇭 Localization:** Successfully migrated all pricing and payment gateways to Philippine Peso (₱).
-*   **🖼️ Admin Redesign:** Replaced legacy list views with a full-width, card-based grid in the Attractions Portal.
-*   **🎞️ Multi-Image Support:** Implemented a gallery system allowing up to 3 high-quality uploads per attraction with a built-in JS carousel.
-*   **🗺️ Metadata Expansion:** Integrated Lat/Lng coordinates and YouTube video embedding for rich attraction display.
-*   **🎟️ Tiered Ticketing:** Added "Adult / Child / Senior" pricing tiers and capacity-managed time slots (Morning/Afternoon).
-*   **🚫 Blackout Dates:** Implemented holiday and closure restrictions to prevent invalid bookings.
+The project is built on a high-performance **PHP/MySQL** architecture with a modern, vanilla JS/CSS frontend.
+
+### 1. Public Discovery & Booking (`index.php`, `booking.php`)
+The gateway for tourists. It provides a "wow" factor with vibrant designs, smooth animations, and an intuitive multi-step booking process.
+- **Dynamic Catalog**: Fetches real-time attraction data, including multi-image carousels and YouTube trailers.
+- **Intelligent Scheduler**: Prevents overbooking by checking real-time slot capacity and blackout dates (Holidays/Maintenance).
+- **Guest-First Experience**: No account required—tourists can book as guests for maximum speed.
+
+### 2. Admin Command Center (`admin.php`)
+A comprehensive dashboard for staff and local government units (LGUs).
+- **Dashboard Analytics**: Real-time stats on today's check-ins vs. expected visitors.
+- **Attraction Factory**: Create and edit tourist spots with custom pricing (Adult/Child/Senior) and designated time slots.
+- **Order Management**: A powerful table to **Approve**, **Reject**, or **Refund** bookings. Supports "Pay Later" verification.
+
+### 3. Backend API Engine (`backend/api_bookings.php`)
+The "brain" of the system.
+- **Reservation Logic**: Handles atomic transactions to ensure data integrity during high-traffic booking windows.
+- **QR Generation**: Creates cryptographically unique ticket hashes to prevent fraud.
 
 ---
 
-## 🔄 System Process Flow
+## 🔄 How the System Works (Thorough Breakdown)
 
-How the system works for a seamless tourist experience:
+### 🟢 The User Journey
+1.  **Discovery**: User browses attractions on the landing page.
+2.  **Configuration**: User selects a **Date** (filtered by blackout dates) and a **Time Slot** (Morning/Afternoon).
+3.  **Tickets**: User chooses ticket quantities (Adult/Child/Senior). The system calculates the price dynamically based on any **Seasonal Multipliers**.
+4.  **Guest Details**: User enters Name, Email, and Phone.
+5.  **Payment**:
+    -   **PayPal**: Immediate secure transaction.
+    -   **GCash**: User scans the admin QR code and enters a 13-digit reference number for verification.
+    -   **Pay Later**: Immediate approval for later fulfillment at the physical ticketing booth.
+6.  **Success**: User receives a unique **Booking Reference** and a digital ticket with a **QR Code**.
 
-1.  **Landing Page Discovery:** Tourists arrive at a high-end landing page to search for destinations.
-2.  **Attraction/Guide Selection:** Browse curated tour packages and localized guide profiles.
-3.  **Booking Configuration:** Fill out the `CheckoutForm` with tour dates and visitor details.
-4.  **Secure Payment:** Trigger the `PayPalButton` to handle payments securely via the PayPal Sandbox/Live API.
-5.  **Success & Confirmation:** Automatic redirection to the `SuccessView` and triggered notification to the local guide via backend.
-6.  **Support Access:** Ongoing support via the integrated **Support Chat** widget.
+### 🔵 The Admin Logic
+1.  **Management**: Admins monitor the "Pending" list. For GCash or Pay Later, they manually check the reference/payment and click **Approve**.
+2.  **Validation**: Staff use the **Entry Validator** to scan visitor QR codes.
+3.  **Governance**: Admins set **Blackout Dates** for maintenance or localized holidays using the integrated Philippine Holiday logic.
 
 ---
 
-## 🛠️ Installation & Local Setup
+## 📊 Process Flowchart
 
-### 1️⃣ XAMPP (Backend & MySQL)
-Required to run the PHP backend and database.
-*   Download and install [XAMPP](https://www.apachefriends.org/).
-*   Start **Apache** and **MySQL**.
-*   Import the database from `backend/database_schema.sql` (if available).
-
-### 2️⃣ Node.js (Frontend Development)
-Essential for the React environment.
-*   **Download:** [Download Node.js](https://nodejs.org/) (Recommended: LTS Version).
-*   **Install:** Follow the installer prompts and ensure "Add to PATH" is checked.
-
-### 3️⃣ Running the Project
-```bash
-# Clone the repository into your xampp/htdocs folder
-cd c:/xampp/htdocs
-git clone <repository_url> Tour_Guide_System
-
-# Setup Frontend
-cd Tour_Guide_System/frontend-react
-npm install   # Installs all necessary React dependencies
-npm run dev   # Starts the Vite development server
+```mermaid
+graph TD
+    A[Visitor arrives at index.php] --> B{Select Attraction}
+    B --> C[Configure Date & Time Slot]
+    C --> D[Select Ticket Tiers]
+    D --> E[Enter Guest Details]
+    E --> F{Select Payment}
+    F -->|PayPal/GCash| G[Electronic Record Created]
+    F -->|Pay Later| H[Pending Record Created]
+    G --> I[Success Page + QR Code Generated]
+    H --> J[Admin Approves in Dashboard]
+    J --> I
+    I --> K[Staff Scans QR at Entrance]
+    K -->|Valid| L[🟢 ENTRY GRANTED]
+    K -->|Invalid/Used| M[🔴 ENTRY DENIED]
 ```
 
 ---
 
-## 🚧 Current Development Focus
+## ⚙️ Technical Deep-Dive
 
-We are currently refining the **Landing Page** to serve as the gateway for the discovery experience. Stay tuned!
-need to update the "upload photo". instead of choosing one at a time. we'll add multiple select
+### 1. QR Code Security
+Instead of simple sequential IDs, the system generates a unique hash based on:
+`SHA256(booking_id + random_bytes(8) + secret_salt)`
+This ensures that tickets cannot be guessed or forged.
+
+### 2. Dynamic Pricing (Seasonal Matrix)
+The system calculates the final price using a **Seasonal Factor**:
+`Final Price = Base Price * Multiplier`
+- **Peak Seasons** (e.g., Holy Week, Christmas): +20%
+- **Off-Peak** (e.g., Rainy Season): -15%
+This logic is stored in the `seasonal_pricing` table and applied automatically at checkout.
+
+---
+
+## 🚀 Essential Features (Part 5 Implementation)
+
+We are currently implementing the following critical pillars for the production release:
+
+### 1. Specialized QR Scanner Interface
+- **Mobile-Responsive Scanner**: A dedicated, ultra-low-latency interface for field staff.
+- **Instant Status**:
+    - **GREEN**: Valid/Not yet scanned.
+    - **RED**: Already used or expired.
+- **Headcount Verification**: The scanner explicitly displays the **Group Size** and **Ticket Types** to verify the physical headcount at the gate.
+
+### 2. Automated Communication Pipeline
+- **24-Hour Reminder**: The system will automatically trigger an email 24 hours before the visit date, resending the QR code and providing Google Maps directions.
+- **Post-Visit Feedback**: 2 hours after a time slot ends, a survey is sent to the visitor to collect reviews and improve service quality.
+
+### 3. Integrated Pricing Calendar
+- Visual "Heatmap" for admins to manage pricing multipliers and capacity limits across a full calendar year.
+
+---
+
+## 🛠️ Installation
+
+1.  **Host**: Place the project in `xampp/htdocs/Tour_Guide_System`.
+2.  **Database**: Import the latest schema from `backend/config.php` (connection details).
+3.  **Dependencies**: PHPMailer is included for automated notifications.
+4.  **Access**: Visit `localhost/Tour_Guide_System/index.php` for users or `admin.php` for management.
+
+---
+*Developed with ❤️ for the Philippine Tourism industry.*

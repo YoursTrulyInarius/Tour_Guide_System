@@ -2,7 +2,7 @@
 // includes/footer.php
 ?>
         <footer class="footer">
-            <div class="container">
+            <div class="<?php echo isset($is_admin_layout) && $is_admin_layout ? 'container-fluid' : 'container'; ?>">
                 <p>&copy; <?php echo date('Y'); ?> YoursTruly Tours. Empowering Discoveries.</p>
             </div>
         </footer>

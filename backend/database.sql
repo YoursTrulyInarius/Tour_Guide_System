@@ -100,6 +100,15 @@ CREATE TABLE IF NOT EXISTS blackout_dates (
     FOREIGN KEY (attraction_id) REFERENCES attractions(id) ON DELETE CASCADE
 );
 
+-- Multi-Image Gallery for Attractions
+CREATE TABLE IF NOT EXISTS attraction_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    attraction_id INT NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (attraction_id) REFERENCES attractions(id) ON DELETE CASCADE
+);
+
 -- Default Admin accounts
 -- Passwords are: admin123
 INSERT IGNORE INTO users (username, email, password_hash, role) VALUES 
