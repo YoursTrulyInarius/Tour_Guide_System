@@ -118,3 +118,6 @@ We are currently implementing the following critical pillars for the production 
 
 ---
 *Developed with ❤️ for the Philippine Tourism industry.*
+default credenitals
+admin: admin@yourstruly@gmail.com
+password: admin123
