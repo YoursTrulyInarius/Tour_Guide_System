@@ -2,11 +2,11 @@
 
 > **🚀 Status:** **STILL WORKING ON IT** (Active Production)
 >
-> **🎯 Next Major Step:** **🎨 Working on the Landing Page**
+> **🎯 Next Major Step:** **🎞️ Multi-Photo Carousel (Public Booking Page)**
 >
 > **Developer:** YoursTrulyInarius
 
-A premium, modern web platform connecting tourists with expert local guides in the Philippines. The system is transitioning from a traditional PHP-based architecture to a high-performance **React + Vite** frontend.
+A premium, modern web platform connecting tourists with expert local guides in the Philippines. This system features a robust **PHP/MySQL** backend with a high-performance, modern CSS/JS frontend.
 
 ---
 
@@ -14,23 +14,23 @@ A premium, modern web platform connecting tourists with expert local guides in t
 
 Our system leverages a robust, modern stack to ensure performance and scalability:
 
-*   **Frontend Core:** ReactJS (v18+) with Vite for ultra-fast development.
-*   **Styling & Design:** Vanilla CSS with HSL-based modern color tokens and **Glassmorphism** effects.
-*   **Backend & Logic:** PHP (Vanilla) for heavy-lifting API endpoints and legacy logic.
-*   **Database:** MySQL (Relational storage for users, tours, and bookings).
-*   **Integrations:** 
-    *   **PayPal API:** For secure, global payment processing.
-    *   **PHPMailer:** For automated email notifications and booking receipts.
+*   **⚡ Core Logic:** Native PHP (PHP 7.4/8.0+) with PDO for secure database interactions.
+*   **🎨 Design System:** Modern Vanilla CSS with HSL color tokens, Glassmorphism, and responsive Grid/Flex layouts.
+*   **🏛️ Database:** MySQL (Stored procedures/relational schema for attractions, tickets, and bookings).
+*   **💳 Integrations:** 
+    *   **PayPal SDK:** Fully localized for Philippine Peso (PHP) transactions.
+    *   **PHPMailer:** Automated HTML email notifications for confirmations and e-receipts.
 
 ---
 
 ## ✨ What We've Changed (Recent Updates)
 
-*   **React Migration:** Transitioned the main user dashboard and booking flows to React for a smoother, single-page experience.
-*   **Premium Visuals:** Implemented sophisticated glassmorphism UI/UX across all components.
-*   **Secure Checkout:** Fully integrated the **PayPal Checkout Button** for real-time transactions.
-*   **Support & Interaction:** Added a persistent **Support Chat** to help tourists in real-time.
-*   **Simplified Navigation:** Restructured the app into specialized components (CheckoutForm, SuccessView, LandingPage).
+*   **🇵🇭 Localization:** Successfully migrated all pricing and payment gateways to Philippine Peso (₱).
+*   **🖼️ Admin Redesign:** Replaced legacy list views with a full-width, card-based grid in the Attractions Portal.
+*   **🎞️ Multi-Image Support:** Implemented a gallery system allowing up to 3 high-quality uploads per attraction with a built-in JS carousel.
+*   **🗺️ Metadata Expansion:** Integrated Lat/Lng coordinates and YouTube video embedding for rich attraction display.
+*   **🎟️ Tiered Ticketing:** Added "Adult / Child / Senior" pricing tiers and capacity-managed time slots (Morning/Afternoon).
+*   **🚫 Blackout Dates:** Implemented holiday and closure restrictions to prevent invalid bookings.
 
 ---
 

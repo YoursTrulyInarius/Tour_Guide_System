@@ -63,7 +63,7 @@ function sendTicketEmail($pdo, $booking_id) {
                 <p><strong>Booking ID:</strong> {$booking_id}</p>
                 <p><strong>Visit Date:</strong> {$booking['visit_date']}</p>
                 <p><strong>Time Slot:</strong> {$booking['slot_name']}</p>
-                <p><strong>Total Paid:</strong> \${$booking['total_amount']}</p>
+                <p><strong>Total Paid:</strong> ₱{$booking['total_amount']}</p>
             </div>
 
             <h3>Your Tickets:</h3>

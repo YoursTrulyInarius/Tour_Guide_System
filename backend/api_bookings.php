@@ -34,7 +34,17 @@ switch ($action) {
         $attraction_id = isset($_GET['attraction_id']) ? intval($_GET['attraction_id']) : 1;
 
         try {
-            // Get all time slots for the attraction
+            // 1. Check for Blackout Dates
+            $blackout_stmt = $pdo->prepare("SELECT reason FROM blackout_dates WHERE attraction_id = ? AND blackout_date = ? LIMIT 1");
+            $blackout_stmt->execute([$attraction_id, $date]);
+            $blackout = $blackout_stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($blackout) {
+                echo json_encode(['success' => false, 'message' => 'This date is currently closed: ' . $blackout['reason']]);
+                break;
+            }
+
+            // 2. Get all time slots
             $stmt = $pdo->prepare("SELECT id, slot_name, start_time, end_time, max_capacity FROM time_slots WHERE attraction_id = ?");
             $stmt->execute([$attraction_id]);
             $slots = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -107,10 +117,16 @@ switch ($action) {
         break;
 
     case 'reserve':
-        // Expecting JSON: { attraction_id, date, time_slot_id, visitor_email, visitor_name, visitor_phone, tickets: [{type_id, quantity}, ...] }
+        // Expecting JSON: { attraction_id, date, time_slot_id, visitor_email... }
         $data = json_decode(file_get_contents('php://input'), true);
         if (!$data) {
             echo json_encode(['success' => false, 'message' => 'Invalid input']);
+            break;
+        }
+
+        // Honeypot Spam Check
+        if (!empty($data['website_url'])) {
+            echo json_encode(['success' => true, 'booking_id' => 'spam_ignored', 'total_amount' => 0]);
             break;
         }
 
@@ -120,7 +136,30 @@ switch ($action) {
         try {
             $pdo->beginTransaction();
 
-            // Calculate total amount from tickets
+            // 1. Double check Blackout Dates
+            $blackout_stmt = $pdo->prepare("SELECT reason FROM blackout_dates WHERE attraction_id = ? AND blackout_date = ? LIMIT 1");
+            $blackout_stmt->execute([$data['attraction_id'], $data['date']]);
+            if ($blackout_stmt->fetch()) {
+                throw new Exception("Selected date is a blackout date.");
+            }
+
+            // 2. Double check Capacity
+            $total_requested = 0;
+            foreach ($data['tickets'] as $t) $total_requested += $t['quantity'];
+
+            $slot_stmt = $pdo->prepare("SELECT max_capacity FROM time_slots WHERE id = ?");
+            $slot_stmt->execute([$data['time_slot_id']]);
+            $max_cap = $slot_stmt->fetchColumn();
+
+            $booked_stmt = $pdo->prepare("SELECT COUNT(*) FROM tickets t JOIN bookings b ON t.booking_id = b.id WHERE b.visit_date = ? AND b.time_slot_id = ? AND b.status IN ('paid', 'pending')");
+            $booked_stmt->execute([$data['date'], $data['time_slot_id']]);
+            $booked = $booked_stmt->fetchColumn();
+
+            if (($booked + $total_requested) > $max_cap) {
+                throw new Exception("Capacity exceeded for this slot. Only " . ($max_cap - $booked) . " spots left.");
+            }
+
+            // 3. Calculate total amount from tickets
             $total_amount = 0;
             $ticket_entries = [];
 

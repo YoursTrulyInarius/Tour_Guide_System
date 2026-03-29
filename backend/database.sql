@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('tourist', 'guide', 'admin') NOT NULL DEFAULT 'tourist',
+    role ENUM('admin') NOT NULL DEFAULT 'admin',
     profile_pic VARCHAR(255) DEFAULT NULL,
     status ENUM('active', 'banned') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -91,42 +91,18 @@ CREATE TABLE IF NOT EXISTS seasonal_pricing (
     FOREIGN KEY (attraction_id) REFERENCES attractions(id) ON DELETE CASCADE
 );
 
--- Add some initial data
-INSERT INTO attractions (name, description, location, image_url) VALUES 
-('Enchanted Gardens', 'A beautiful botanical garden with rare tropical flowers and light shows at night.', 'Green Valley', 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae'),
-('Crystal Cove', 'Pristine turquoise waters and hidden sea caves perfect for snorkeling and relaxation.', 'Coastal Bay', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e'),
-('Sky Peak', 'A breathtaking mountain view accessible via cable car or a challenging 3-hour hike.', 'Mist Mountain', 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b');
-
-INSERT INTO ticket_types (attraction_id, name, base_price) VALUES 
-(1, 'Adult', 25.00),
-(1, 'Child', 15.00),
-(1, 'Senior', 20.00);
-
-INSERT INTO time_slots (attraction_id, slot_name, start_time, end_time, max_capacity) VALUES 
-(1, 'Morning', '09:00:00', '12:00:00', 500),
-(1, 'Afternoon', '13:00:00', '17:00:00', 500);
-
--- Revenue Add-ons (Upsells)
-CREATE TABLE IF NOT EXISTS add_ons (
+-- Blackout Dates (Closed for specific days / Holidays)
+CREATE TABLE IF NOT EXISTS blackout_dates (
     id INT AUTO_INCREMENT PRIMARY KEY,
     attraction_id INT NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    description TEXT,
+    blackout_date DATE NOT NULL,
+    reason VARCHAR(255),
     FOREIGN KEY (attraction_id) REFERENCES attractions(id) ON DELETE CASCADE
 );
 
--- Binding Add-ons to Bookings
-CREATE TABLE IF NOT EXISTS booking_add_ons (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    booking_id VARCHAR(36) NOT NULL,
-    add_on_id INT NOT NULL,
-    quantity INT NOT NULL,
-    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
-    FOREIGN KEY (add_on_id) REFERENCES add_ons(id) ON DELETE CASCADE
-);
+-- Default Admin accounts
+-- Passwords are: admin123
+INSERT IGNORE INTO users (username, email, password_hash, role) VALUES 
+('admin_user', 'admin@yourstruly.com', '$2y$10$kv3JOmyV4NKp3dtb.0YFzOHpW/z/fiiA9I0GgPYoPtMVvNJAnpf6m', 'admin');
 
-INSERT INTO add_ons (attraction_id, name, price, description) VALUES 
-(1, 'Audio Guide', 5.00, 'Immersive storytelling in 5 languages'),
-(1, 'Skip-the-line', 10.00, 'Priority entrance to the spot'),
-(1, 'Parking Pass', 10.00, 'Reserved secure parking');
+
