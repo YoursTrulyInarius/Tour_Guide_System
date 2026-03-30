@@ -38,7 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         header("Location: admin.php?view=dashboard");
         exit;
     } else {
-        $login_error = "Invalid restricted credentials";
+        $login_error = "Invalid restricted credentials.";
+        if (!$user) {
+            $login_error .= " Admin account not found. Follow the <a href='backend/setup_admin.php' style='color:inherit; text-decoration:underline;'>Setup Guide</a> to initialize it.";
+        }
     }
 }
 
