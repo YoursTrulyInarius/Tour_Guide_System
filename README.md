@@ -1,123 +1,212 @@
-# 🗺️ Tour Guide System (Under Production)
+# 🗺️ Tour Guide System (Premium Digital Concierge)
 
 > [!IMPORTANT]
-> **🚀 PROJECT STATUS:** ACTIVE PRODUCTION / UNDER DEVELOPMENT
-> This system is currently being refined. Key features like the mobile-responsive QR Scanner and Automated Email Reminders are in the implementation phase.
+> **🚀 PROJECT STATUS:** ACTIVE PRODUCTION
+> This system is a high-performance, end-to-end digital solution for the Philippine Tourism industry. It features a modern multi-step booking engine, secure payment integrations, and a robust administrative backend.
 
-## 🌟 Overview
-The **Tour Guide System** is a premium, end-to-end digital solution designed to streamline the tourist experience in the Philippines. It bridges the gap between local attractions and visitors through a seamless booking engine, secure payment integrations, and a robust administrative backend for site managers.
+<br>
 
----
+## 🌟 Table of Contents
 
-## 🏗️ System Architecture
+- [Architecture Overview](#-architecture-overview)
+- [Technology Stack](#-technology-stack)
+- [Core System Pillars](#-core-system-pillars)
+  - [1. 📅 The Booking Engine](#1--the-booking-engine-multi-step-ui--atomic-validation)
+  - [2. 💳 The Payment Ecosystem](#2--the-payment-ecosystem-paymongo--paypal)
+  - [3. 🎫 The QR Passport System](#3--the-qr-passport-system-generation-storage--scanning)
+- [Deep Dive: Core Implementation](#-deep-dive-core-implementation-codes)
+- [Database Schema](#-database-schema)
+- [Installation & Setup](#-installation--setup)
 
-The project is built on a high-performance **PHP/MySQL** architecture with a modern, vanilla JS/CSS frontend.
-
-### 1. Public Discovery & Booking (`index.php`, `booking.php`)
-The gateway for tourists. It provides a "wow" factor with vibrant designs, smooth animations, and an intuitive multi-step booking process.
-- **Dynamic Catalog**: Fetches real-time attraction data, including multi-image carousels and YouTube trailers.
-- **Intelligent Scheduler**: Prevents overbooking by checking real-time slot capacity and blackout dates (Holidays/Maintenance).
-- **Guest-First Experience**: No account required—tourists can book as guests for maximum speed.
-
-### 2. Admin Command Center (`admin.php`)
-A comprehensive dashboard for staff and local government units (LGUs).
-- **Dashboard Analytics**: Real-time stats on today's check-ins vs. expected visitors.
-- **Attraction Factory**: Create and edit tourist spots with custom pricing (Adult/Child/Senior) and designated time slots.
-- **Order Management**: A powerful table to **Approve**, **Reject**, or **Refund** bookings. Supports "Pay Later" verification.
-
-### 3. Backend API Engine (`backend/api_bookings.php`)
-The "brain" of the system.
-- **Reservation Logic**: Handles atomic transactions to ensure data integrity during high-traffic booking windows.
-- **QR Generation**: Creates cryptographically unique ticket hashes to prevent fraud.
+<br>
 
 ---
 
-## 🔄 How the System Works (Thorough Breakdown)
+## 🏗️ Architecture Overview
 
-### 🟢 The User Journey
-1.  **Discovery**: User browses attractions on the landing page.
-2.  **Configuration**: User selects a **Date** (filtered by blackout dates) and a **Time Slot** (Morning/Afternoon).
-3.  **Tickets**: User chooses ticket quantities (Adult/Child/Senior). The system calculates the price dynamically based on any **Seasonal Multipliers**.
-4.  **Guest Details**: User enters Name, Email, and Phone.
-5.  **Payment**:
-    -   **PayPal**: Immediate secure transaction.
-    -   **GCash**: User scans the admin QR code and enters a 13-digit reference number for verification.
-    -   **Pay Later**: Immediate approval for later fulfillment at the physical ticketing booth.
-6.  **Success**: User receives a unique **Booking Reference** and a digital ticket with a **QR Code**.
+The project follows a **Modular Monolith** pattern using PHP 8.x. It separates concerns across three primary layers:
 
-### 🔵 The Admin Logic
-1.  **Management**: Admins monitor the "Pending" list. For GCash or Pay Later, they manually check the reference/payment and click **Approve**.
-2.  **Validation**: Staff use the **Entry Validator** to scan visitor QR codes.
-3.  **Governance**: Admins set **Blackout Dates** for maintenance or localized holidays using the integrated Philippine Holiday logic.
+1.  **Frontend (UI)**: Vanilla Javascript & CSS3 with a focus on "Premium Aesthetics" (glassmorphism, smooth transitions).
+2.  **API Layer (`backend/api_*.php`)**: Stateless endpoints that handle logic for bookings, statistics, and communications.
+3.  **Data Layer (`includes/db.php`)**: A persistent MySQL database accessed via PHP Data Objects (PDO) for SQL injection protection.
+
+<br>
 
 ---
 
-## 📊 Process Flowchart
+## 💻 Technology Stack
 
-```mermaid
-graph TD
-    A[Visitor arrives at index.php] --> B{Select Attraction}
-    B --> C[Configure Date & Time Slot]
-    C --> D[Select Ticket Tiers]
-    D --> E[Enter Guest Details]
-    E --> F{Select Payment}
-    F -->|PayPal/GCash| G[Electronic Record Created]
-    F -->|Pay Later| H[Pending Record Created]
-    G --> I[Success Page + QR Code Generated]
-    H --> J[Admin Approves in Dashboard]
-    J --> I
-    I --> K[Staff Scans QR at Entrance]
-    K -->|Valid| L[🟢 ENTRY GRANTED]
-    K -->|Invalid/Used| M[🔴 ENTRY DENIED]
+- **Backend**: PHP 8 (PDO, Sessions, CURL)
+- **Frontend**: HTML5, Modern CSS, Vanilla JS
+- **Database**: MySQL 8
+- **Payments**: PayMongo API (GCash, Maya, GrabPay), PayPal SDK
+- **Communication**: PHPMailer (SMTP Integration)
+- **Utilities**: HTML5-QRCode (Scanner), Fingerprint.js (Fraud Prevention)
+
+<br>
+
+---
+
+## 🗺️ Core System Pillars
+
+The **Tour Guide System** is built on three high-performance pillars. Below is the technical breakdown of how each module operates.
+
+<br>
+
+### 1. 📅 The Booking Engine (Multi-Step UI & Atomic Validation)
+
+The booking module provides an intuitive, step-by-step experience for tourists while enforcing strict capacity limits on the server.
+
+**Frontend UI Logic (`booking.php`):**
+The UI uses an asynchronous "Step-Load" pattern. As users select a date, the system fetches real-time availability via `fetch()`.
+
+```javascript
+async function fetchSlots() {
+    const date = document.getElementById('visitDate').value;
+    const res = await fetch(`backend/api_bookings.php?action=get_availability&date=${date}`);
+    const data = await res.json();
+    
+    // Renders slots only if they have remaining capacity
+    data.slots.forEach(slot => {
+        const isSoldOut = slot.available_capacity <= 0;
+        renderSlotUI(slot, isSoldOut);
+    });
+}
 ```
 
----
+**Backend Integrity (`backend/api_bookings.php`):**
+To prevent race conditions where two users book the last spot simultaneously, the backend re-validates capacity at the moment of reservation:
 
-## ⚙️ Technical Deep-Dive
+```php
+// Final Capacity Check before INSERT
+if (($booked_count + $requested_pax) > $max_capacity) {
+    throw new Exception("Slot just filled up. Please select another time.");
+}
+```
 
-### 1. QR Code Security
-Instead of simple sequential IDs, the system generates a unique hash based on:
-`SHA256(booking_id + random_bytes(8) + secret_salt)`
-This ensures that tickets cannot be guessed or forged.
-
-### 2. Dynamic Pricing (Seasonal Matrix)
-The system calculates the final price using a **Seasonal Factor**:
-`Final Price = Base Price * Multiplier`
-- **Peak Seasons** (e.g., Holy Week, Christmas): +20%
-- **Off-Peak** (e.g., Rainy Season): -15%
-This logic is stored in the `seasonal_pricing` table and applied automatically at checkout.
+<br>
 
 ---
 
-## 🚀 Essential Features (Part 5 Implementation)
+### 2. 💳 The Payment Ecosystem (PayMongo & PayPal)
 
-We are currently implementing the following critical pillars for the production release:
+The system supports a "Hybrid Payment" model: **Instant Online Payment** (PayMongo) or **Manual Verification** (GCash Scan / Pay Later).
 
-### 1. Specialized QR Scanner Interface
-- **Mobile-Responsive Scanner**: A dedicated, ultra-low-latency interface for field staff.
-- **Instant Status**:
-    - **GREEN**: Valid/Not yet scanned.
-    - **RED**: Already used or expired.
-- **Headcount Verification**: The scanner explicitly displays the **Group Size** and **Ticket Types** to verify the physical headcount at the gate.
+**Online Checkout Flow (`backend/paymongo_helper.php`):**
+We utilize PayMongo's hosted checkout to remain PCI-compliant. The system maps internal `booking_ids` to PayMongo `reference_numbers`.
 
-### 2. Automated Communication Pipeline
-- **24-Hour Reminder**: The system will automatically trigger an email 24 hours before the visit date, resending the QR code and providing Google Maps directions.
-- **Post-Visit Feedback**: 2 hours after a time slot ends, a survey is sent to the visitor to collect reviews and improve service quality.
+```php
+public function createCheckoutSession($amount, $booking_id, $customer) {
+    return $this->request('POST', '/checkout_sessions', [
+        'attributes' => [
+            'amount' => $amount * 100, // Converts PHP to Centavos
+            'payment_method_types' => ['gcash', 'paymaya', 'card'],
+            'success_url' => $this->getBaseUrl() . '/success.php?booking_id=' . $booking_id,
+        ]
+    ]);
+}
+```
 
-### 3. Integrated Pricing Calendar
-- Visual "Heatmap" for admins to manage pricing multipliers and capacity limits across a full calendar year.
+**Pay Later / GCash Manual Workflow:**
+For manual payments, the system records a `pending` status. Admin staff must manually verify the GCash reference number in the dashboard before the QR ticket is released via email.
+
+<br>
+
+---
+
+### 3. 🎫 The QR Passport System (Generation, Storage, & Scanning)
+
+This is the security heart of the project. It handles the lifecycle of a digital ticket from creation to entrance scanning.
+
+**QR Generation & Persistence (`backend/save_qr.php`):**
+Once a booking is paid, a high-resolution QR code is rendered in the browser and sent back to the server to be saved as a permanent `.png` file for the automated email.
+
+```php
+// Strip data URL prefix and save from Base64
+$image_data = preg_replace('/^data:image\/png;base64,/', '', $base64_string);
+$image_data = base64_decode($image_data);
+file_put_contents('qr/' . $booking_id . '.png', $image_data);
+
+// Link the image to the ticket record
+$pdo->prepare("UPDATE tickets SET qr_image_path = ? WHERE booking_id = ?")
+    ->execute(['qr/' . $booking_id . '.png', $booking_id]);
+```
+
+**Field Validation & Anti-Fraud (`admin.php`):**
+Staff use the built-in scanner to verify the `SHA256` hash. The system is "Single-Use" by design:
+
+*   **Scanning Logic**: `UPDATE tickets SET is_scanned = TRUE, scanned_at = NOW() WHERE qr_code = ? AND is_scanned = FALSE`
+*   **Safety**: If `rowCount() == 0`, the staff is alerted that the ticket is either **Invalid** or **Already Used**.
+
+<br>
 
 ---
 
-## 🛠️ Installation
+## 🔍 Deep Dive: Core Implementation Codes
 
-1.  **Host**: Place the project in `xampp/htdocs/Tour_Guide_System`.
-2.  **Database**: Import the latest schema from `backend/config.php` (connection details).
-3.  **Dependencies**: PHPMailer is included for automated notifications.
-4.  **Access**: Visit `localhost/Tour_Guide_System/index.php` for users or `admin.php` for management.
+*For developers looking to extend the system, here are the primary technical implementations:*
+
+### 🔐 Cryptographically Secure Hashing
+
+```php
+function generateQRCode($booking_id) {
+    // SHA256 ensures hashes are 64 characters and impossible to guess
+    return hash('sha256', $booking_id . bin2hex(random_bytes(8)) . 'SECRET_SALT');
+}
+```
+
+<br>
+
+### ✉️ Automated Communication (PHPMailer)
+
+```php
+// Embedded QR Images (CIDs) ensure tickets display offline in the email
+$mail->addEmbeddedImage('qr/' . $booking_id . '.png', 'ticket_qr');
+$mail->Body = "Show this at the gate: <img src='cid:ticket_qr'>";
+```
+
+<br>
 
 ---
+
+## 🗄️ Database Schema
+
+The core relational structure ensures data integrity:
+
+- **`attractions`**: Master table for tourist spots.
+- **`time_slots`**: Define custom windows (Morning, Afternoon, Full Day).
+- **`bookings`**: Stores visitor metadata, total amount, and payment status.
+- **`tickets`**: Individual QR entries linked to a booking.
+- **`seasonal_pricing`**: Overrides base prices for specific date ranges.
+- **`blackout_dates`**: Stores dates when the attraction is closed for maintenance.
+
+<br>
+
+---
+
+## 🛠️ Installation & Setup
+
+1.  **Clone to XAMPP**: Place project files in `C:/xampp/htdocs/Tour_Guide_System`.
+2.  **Database Migration**:
+    - Open phpMyAdmin.
+    - Create `tour_guide_db`.
+    - Import `backend/database.sql`.
+3.  **Mail Configuration**:
+    - Edit `backend/config_mail.php` with your SMTP details (Gmail App Password recommended).
+4.  **Admin Setup**:
+    - Visit `localhost/Tour_Guide_System/backend/setup_admin.php` to create the default administrator account.
+
+<br>
+
+---
+
+### 🔑 Default Credentials
+
+- **Admin Email**: `admin@yourstruly@gmail.com`
+- **Password**: `admin123`
+
+<br>
+
+---
+
 *Developed with ❤️ for the Philippine Tourism industry.*
-default credenitals
-admin: admin@yourstruly@gmail.com
-password: admin123
